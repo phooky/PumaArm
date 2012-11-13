@@ -62,7 +62,7 @@ class Channel:
         self.cont.runQuery("!P {0} {1}".format(self.chan,val))
     def getCurrentPos(self):
         encoded=self.cont.runQuery("?C {0}".format(self.chan))
-        return encoded[2:].strip()
+        return int(encoded[2:].strip())
 
 # Bottom: 8D9B20625254
 # CH1 : wrist rotation
@@ -90,19 +90,21 @@ axisMap = {
     "bend": axisWristBend,
     "tool": axisTool,
     "base": axisBase,
-    "shoulder": axisShoulder
+    "shldr": axisShoulder
 }
 
 def printAll():
     for key, value in axisMap.items():
-        print "{0}:{1}  ".format(key,value.getCurrentPos()),
-    print
+        print "{0}:{1:+5} ".format(key,value.getCurrentPos()),
+    print "\r",
+    sys.stdout.flush()
 
 
 if __name__ == '__main__':
     
-    controller = controllerA
-    controller.setup()
+    controllerA.setup()
+    controllerB.setup()
+    controllerC.setup()
     while True:
         #axisShoulder.setP(-2500)
         #axisBase.setP(-2500)
