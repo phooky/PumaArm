@@ -46,19 +46,26 @@ class Controller:
 
     def setup(self):
         for command in filter(None,[x.strip() for x in controller_script.split("\n")]):
-            print(command)
-            print(self.runQuery(command))
+            self.runQuery(command)
+
+    def resetToEeprom(self):
+        print "Resetting to EEPROM settings... ",
+        print(self.runQuery("%EELD"))
 
     def close(self):
         self.serial.close()
 
 class Channel:
-    def __init__(self,controller,channel):
+    def __init__(self,controller,channel,configMap={}):
         self.cont = controller
         self.chan = channel
         self.target = 0
-    def initialize(self):
+        self.configMap = configMap
+    def setup(self):
         c = self.cont
+        for key, value in self.configMap.items():
+            print "Setting {0} to {1}...".format(key,value)
+            c.runQuery("^{0} {1} {2}".format(key,self.chan,value))
     def setP(self,val):
         self.target = val
         self.cont.runQuery("!P {0} {1}".format(self.chan,val))
@@ -86,7 +93,7 @@ axisElbow = Channel(controllerC, 2)
 axisWristBend = Channel(controllerB, 1)
 axisTool = Channel(controllerB, 2)
 axisBase = Channel(controllerA, 1)
-axisShoulder = Channel(controllerA, 2)
+axisShoulder = Channel(controllerA, 2, {"MVEL":750} )
 
 axisMap = {
     "wrist": axisWrist,
@@ -97,34 +104,40 @@ axisMap = {
     "shouler": axisShoulder
 }
 
+controllers = [ controllerA, controllerB, controllerC ]
+
 def printAll():
     sys.stderr.write("\x1b[2J\x1b[H")
     for key, value in axisMap.items():
         pos = value.getCurrentPos()
         target = value.getCurrentTarget()
         delta = pos - target
-        print "{0:>10}:{1:>+6}/{2:<+6}   delta:{3}".format(key,pos,target,delta)
+        print "{0:>10}:{1:>+8}/{2:<+8}   delta:{3}".format(key,pos,target,delta)
     print "\r",
     sys.stdout.flush()
 
 
 if __name__ == '__main__':
-    
-    controllerA.setup()
-    controllerB.setup()
-    controllerC.setup()
-    if sys.argv[1] == 'random':
-        while True:
-            for v in axisMap.values():
-                v.setP(random.randrange(-3500,3500))
-            for i in range(15):
-                time.sleep(0.1)
-                printAll()
-    elif sys.argv[1] == 'tozero':
+    for c in controllers:
+        c.setup()
+    for ch in axisMap.values():
+        ch.setup()
+    for command in sys.argv[1:]:
+        if sys.argv[1] == 'random':
+            while True:
+                for v in axisMap.values():
+                    v.setP(random.randrange(-3500,3500))
+                for i in range(15):
+                    time.sleep(0.1)
+                    printAll()
+        elif sys.argv[1] == 'tozero':
             for v in axisMap.values():
                 v.setP(0)
             time.sleep(1.5)
             printAll()
+        elif command == 'reset':
+            for c in controllers:
+                c.resetToEeprom()
     controllerA.close()
     controllerB.close()
     controllerC.close()
