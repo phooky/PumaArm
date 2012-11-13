@@ -14,7 +14,10 @@ controller_script = """
 """
 
 def portFromId(id):
-    return "/dev/serial/by-id/usb-Roboteq_Motor_Controller_{0}-if00".format(id)
+    if sys.platform == 'linux2':
+        return "/dev/serial/by-id/usb-Roboteq_Motor_Controller_{0}-if00".format(id)
+    else:
+        raise RuntimeError("No defined way to find serial port name on platform "+sys.platform)
 
 class Controller:
     def __init__(self, id):
@@ -88,12 +91,16 @@ controllerB = Controller("8D9021655254")
 # CH2 : shoulder rotation
 controllerA = Controller("8D8643975049")
 
-axisWrist = Channel(controllerC, 1)
+axisWrist = Channel(controllerC, 1, {
+        "ELL"  :-20000,
+        "EHL"  : 20000,
+        "MXTRN": 10000,
+})
 axisElbow = Channel(controllerC, 2)
 axisWristBend = Channel(controllerB, 1)
 axisTool = Channel(controllerB, 2)
-axisBase = Channel(controllerA, 1)
-axisShoulder = Channel(controllerA, 2, {"MVEL":750} )
+axisBase = Channel(controllerA, 1, {"MVEL":750})
+axisShoulder = Channel(controllerA, 2 )
 
 axisMap = {
     "wrist": axisWrist,
