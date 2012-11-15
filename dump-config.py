@@ -4,6 +4,8 @@ import serial
 import sys
 import argparse
 
+from wdc2250 import WDC2250
+
 PARAMS_CONFIG_SAFETY = [
     "ACS",
     "AMS",
@@ -106,53 +108,24 @@ PARAMS_SEPEX = [
 
 ALL_PARAMS = PARAMS_CONFIG_SAFETY + PARAMS_DIO_CONFIG + PARAMS_ANALOG_INPUT_CONFIG + PARAMS_PULSE_INPUT_CONFIG + PARAMS_ENCODER + PARAMS_BRUSHLESS + PARAMS_POWER + PARAMS_MOTOR_CHAN + PARAMS_SEPEX
 
-def portFromId(id):
-    return "/dev/serial/by-id/usb-Roboteq_Motor_Controller_{0}-if00".format(id)
 
-class Controller:
-    def __init__(self, id):
-        self.id = id
-        self.echo = True
-        self.serial = serial.Serial(portFromId(self.id),115200)
-
-    def readLine(self):
-        "Read until carriage return."
-        line = []
-        while True:
-            c = self.serial.read(1)
-            line.append(c)
-            if c == '\r':
-                break
-        return "".join(line)
-
-    def safeWrite(self,msg):
-        "Write a string to the port and read back the echoed characters."
-        self.serial.write(msg)
-        if self.echo:
-            echoed = self.readLine()
-            if echoed != msg:
-                print("ERROR: port {0} did not echo message (sent {1}, recv {2})".format(id,msg,echoed))
-
-    def runQuery(self, q):
-        self.safeWrite("{0}\r".format(q))
-        return self.readLine()
-
-    def dumpConfiguration(self,f):
-         for parameter in ALL_PARAMS:
-            f.write(self.runQuery("~"+parameter).strip()+"\n")
-
-    def close(self):
-        self.serial.close()
-
-
-class Channel:
-    def __init__(self,controller,channel):
-        self.cont = controller
-        self.chan = channel
-    def initialize(self):
-        c = self.cont
-
-
+def dumpConfiguration(controller,f,raw):
+    for parameter in ALL_PARAMS:
+        response = controller.runQuery("~"+parameter).strip()
+        if raw:
+            f.write(response+"\n")
+        else:
+            [param,value] = response.split("=",1)
+            values = value.strip().split(":")
+            if len(values) == 1:
+                if values[0]:
+                    f.write("^{0} {1}\n".format(param,value))
+                else:
+                    f.write('^{0} ""\n'.format(param))
+            else:
+                for n in range(len(values)):
+                    f.write("^{0} {1} {2}\n".format(param,1+n,values[n]))
+    
     #controllerC = Controller("8D9B20625254") # bottom (wrist)
     #controllerA = Controller("8D8643975049") # top (shoulder)
     #controllerB = Controller("8D9021655254") # middle (elbow)
@@ -160,6 +133,7 @@ class Channel:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--id", dest="id")
+    parser.add_argument("--raw", action="store_true")
 
     parsed = parser.parse_args(sys.argv[1:])
     
@@ -168,8 +142,8 @@ if __name__ == '__main__':
         parser.usage()
         sys.exit(1)
     else:
-        controller = Controller(parsed.id)
-        controller.dumpConfiguration(sys.stdout)
+        controller = WDC2250(parsed.id)
+        dumpConfiguration(controller,sys.stdout,parsed.raw)
         controller.close()
 
 
