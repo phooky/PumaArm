@@ -54,7 +54,6 @@ class WDC2250:
         for line in script.split("\n"):
             line = line.split("#",1)[0].strip()
             if line:
-                print("QUERY: ."+line+".")
                 self.runQuery(line)
             
     def resetToEeprom(self):

@@ -6,13 +6,6 @@ import argparse
 import time
 import random
 
-controller_script = """
-^MMOD 1 3
-^MMOD 2 3
-~MMOD
-~EMOD
-"""
-
 # Bottom: 8D9B20625254
 # CH1 : wrist rotation
 # CH2 : elbow rotation
@@ -56,14 +49,14 @@ def printAll():
 
 
 if __name__ == '__main__':
-    for c in controllers:
-        c.runScript(controller_script)
-    axisBase.config({"MVEL":750})
-    axisWrist.config( {
-        "ELL"  :-20000,
-        "EHL"  : 20000,
-        "MXTRN": 10000,
-        })
+    #for c in controllers:
+    #    c.runScript(controller_script)
+    #axisBase.config({"MVEL":750})
+    #axisWrist.config( {
+    #    "ELL"  :-20000,
+    #    "EHL"  : 20000,
+    #    "MXTRN": 10000,
+    #    })
     idx = 1
     while idx < len(sys.argv):
         if sys.argv[idx] == 'random':
@@ -80,13 +73,13 @@ if __name__ == '__main__':
             time.sleep(2)
             printAll()
             idx = idx + 3
-        elif sys.argv[1] == 'tozero':
+        elif sys.argv[idx] == 'tozero':
             for v in axisMap.values():
                 v.setP(0)
             time.sleep(1.5)
             printAll()
             idx = idx + 1
-        elif command == 'reset':
+        elif sys.argv[idx] == 'reset':
             for c in controllers:
                 c.resetToEeprom()
             idx = idx + 1
