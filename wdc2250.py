@@ -13,10 +13,14 @@ def portFromId(id):
         raise RuntimeError("No defined way to find serial port name on platform "+sys.platform)
 
 class WDC2250:
-    def __init__(self, id):
+    def __init__(self, id=None, port=None):
         self.id = id
         self.echo = True
-        self.serial = serial.Serial(portFromId(self.id),115200,timeout=5)
+        if port:
+            self.port = port
+        elif id:
+            self.port = portFromId(self.id)
+        self.serial = serial.Serial(self.port,115200,timeout=5)
 
     def config(self,configMap):
         c = self.cont
@@ -50,6 +54,7 @@ class WDC2250:
         for line in script.split("\n"):
             line = line.split("#",1)[0].strip()
             if line:
+                print("QUERY: ."+line+".")
                 self.runQuery(line)
             
     def resetToEeprom(self):

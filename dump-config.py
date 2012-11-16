@@ -125,7 +125,10 @@ def dumpConfiguration(controller,f,raw):
             else:
                 for n in range(len(values)):
                     f.write("^{0} {1} {2}\n".format(param,1+n,values[n]))
-    
+
+def loadConfiguration(controller,f):
+    controller.runScript(f.read())
+
     #controllerC = Controller("8D9B20625254") # bottom (wrist)
     #controllerA = Controller("8D8643975049") # top (shoulder)
     #controllerB = Controller("8D9021655254") # middle (elbow)
@@ -133,17 +136,25 @@ def dumpConfiguration(controller,f,raw):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--id", dest="id")
+    parser.add_argument("--port", dest="port")
     parser.add_argument("--raw", action="store_true")
+    parser.add_argument("--load", action="store_true")
 
     parsed = parser.parse_args(sys.argv[1:])
     
-    if not parsed.id:
-        print("Provide a controller ID.")
+    if not parsed.port and not parsed.id:
+        print("Provide a serial port name or id.")
         parser.usage()
         sys.exit(1)
     else:
-        controller = WDC2250(parsed.id)
-        dumpConfiguration(controller,sys.stdout,parsed.raw)
+        if parsed.port:
+            controller = WDC2250(port=parsed.port)
+        else:
+            controller = WDC2250(id=parsed.id)
+        if parsed.load:
+            loadConfiguration(controller,sys.stdin)
+        else:
+            dumpConfiguration(controller,sys.stdout,parsed.raw)
         controller.close()
 
 
