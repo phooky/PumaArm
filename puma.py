@@ -62,14 +62,16 @@ if __name__ == '__main__':
         if sys.argv[idx] == 'random':
             while True:
                 for v in axisMap.values():
+                    v.setAccel(10000)
+                    v.setSpeed(200)
                     v.setP(random.randrange(-3500,3500))
                 for i in range(15):
                     time.sleep(0.1)
                     printAll()
             idx = idx + 1
         elif sys.argv[idx] == 'set':
-            axis = axisMap[sys.argv[2]]
-            axis.setP(int(sys.argv[3]))
+            axis = axisMap[sys.argv[idx+1]]
+            axis.setP(int(sys.argv[idx+2]))
             time.sleep(2)
             printAll()
             idx = idx + 3

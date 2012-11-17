@@ -79,6 +79,15 @@ class Channel:
         self.target = val
         self.cont.runQuery("!P {0} {1}".format(self.chan,val))
 
+    def setSpeed(self,rpm=100):
+        self.speed = rpm
+        self.cont.runQuery("!S {0} {1}".format(self.chan,rpm))
+
+    def setAccel(self,rpmps=6000):
+        self.accel = rpmps
+        self.cont.runQuery("!AC {0} {1}".format(self.chan,rpmps))
+        self.cont.runQuery("!DC {0} {1}".format(self.chan,rpmps))
+
     def getCurrentPos(self):
         encoded=self.cont.runQuery("?C {0}".format(self.chan))
         return int(encoded[2:].strip())
