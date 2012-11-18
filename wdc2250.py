@@ -20,7 +20,11 @@ class WDC2250:
             self.port = port
         elif id:
             self.port = portFromId(self.id)
-        self.serial = serial.Serial(self.port,115200,timeout=5)
+        try:
+            self.serial = serial.Serial(self.port,115200,timeout=5)
+        except:
+            print("Failed to open serial port "+self.port)
+            self.serial = None
 
     def config(self,configMap):
         c = self.cont
@@ -47,8 +51,12 @@ class WDC2250:
                 print("ERROR: port {0} did not echo message (sent {1}, recv {2})".format(self.id,msg,echoed))
 
     def runQuery(self, q):
-        self.safeWrite("{0}\r".format(q))
-        return self.readLine()
+        if self.serial == None:
+            print "No serial for query"
+            return ""
+        else:
+            self.safeWrite("{0}\r".format(q))
+            return self.readLine()
 
     def runScript(self, script):
         for line in script.split("\n"):

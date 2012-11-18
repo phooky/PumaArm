@@ -19,8 +19,8 @@ controllerB = WDC2250("8D9021655254")
 # CH2 : shoulder rotation
 controllerA = WDC2250("8D8643975049")
 
-axisWrist = Channel(controllerC, 1)
-axisElbow = Channel(controllerC, 2)
+axisWrist = Channel(controllerC, 2)
+axisElbow = Channel(controllerC, 1)
 axisWristBend = Channel(controllerB, 1)
 axisTool = Channel(controllerB, 2)
 axisBase = Channel(controllerA, 1)
