@@ -2,6 +2,7 @@
 
 import serial
 import sys
+import threading
 
 ## IMPORTANT
 ## Check for/remove modemmanager
@@ -67,6 +68,9 @@ class WDC2250:
     def resetToEeprom(self):
         print "Resetting to EEPROM settings... ",
         print(self.runQuery("%EELD"))
+
+    def estop(self):
+        self.runQuery("!EX")
 
     def close(self):
         self.serial.close()

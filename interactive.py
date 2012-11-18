@@ -91,8 +91,8 @@ def handleCommand(line):
                 currentAxis=""
                 relative = 0
                 pot = 0
-                for key, a in axisMap:
-                    a.setSpeed(0)
+                for c in controllers:
+                    c.estop()
                 return
     if wasJogMode and not jogMode:
         axis.setP(axis.getCurrentPos())
